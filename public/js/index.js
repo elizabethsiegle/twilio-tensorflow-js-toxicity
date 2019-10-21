@@ -8,9 +8,9 @@ var activeChannelPage;
 
 var userContext = { identity: null};
 
+
 $(document).ready(function() {
   $('#login-name').focus();
-
   $('#login-button').on('click', function() {
     var identity = $('#login-name').val();
     if (!identity) { return; }
@@ -369,6 +369,25 @@ function removeMessage(message) {
   $('#channel-messages li[data-index=' + message.index + ']').remove();
 }
 
+function classifyToxicity(input) {
+  const threshold = 0.9;
+  toxicity.load(threshold).then(model => {
+    console.log("input ", input);
+    model.classify(input).then(predictions => {
+      console.log(predictions);
+      predictions.forEach((p) => {
+        let label = p.label;
+        let match = p.results[0].match;
+        let prediction = p.results[0].probabilities[1];
+        console.log(label + ": " + match + " \x1b[0m(" + prediction + ")")
+        if(match != false && prediction > 0.5) {
+          alert(`ALERT ALERT: ${input} is ${prediction} likely to be ${label}`);
+        }
+      });
+    });
+  });
+}
+
 function updateMessage(args) {
   var $el = $('#channel-messages li[data-index=' + args.message.index + ']');
   $el.empty();
@@ -466,7 +485,6 @@ function addMessage(message) {
   var initHeight = $('#channel-messages ul').height();
   var $el = $('<li/>').attr('data-index', message.index);
   createMessage(message, $el);
-
   $('#channel-messages ul').append($el);
 
   if (initHeight - 50 < $messages.scrollTop() + $messages.height()) {
@@ -599,6 +617,7 @@ function setActiveChannel(channel) {
       $('#message-body-input').val('').focus();
       $('#channel-messages').scrollTop($('#channel-messages ul').height());
       $('#channel-messages li.last-read').removeClass('last-read');
+      classifyToxicity(body);
     });
   });
 

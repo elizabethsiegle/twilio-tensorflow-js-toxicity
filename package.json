@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/twilio/twilio-chat-demo-js",
   "dependencies": {
+    "@tensorflow-models/toxicity": "^1.2.0",
+    "@tensorflow/tfjs": "^1.2.11",
     "express": "^4.14.0",
     "twilio": "^3.6.5"
   }
