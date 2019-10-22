@@ -369,22 +369,16 @@ function removeMessage(message) {
   $('#channel-messages li[data-index=' + message.index + ']').remove();
 }
 
-function classifyToxicity(input) {
-  const threshold = 0.9;
-  toxicity.load(threshold).then(model => {
-    console.log("input ", input);
-    model.classify(input).then(predictions => {
-      console.log(predictions);
-      predictions.forEach((p) => {
-        let label = p.label;
-        let match = p.results[0].match;
-        let prediction = p.results[0].probabilities[1];
-        console.log(label + ": " + match + " \x1b[0m(" + prediction + ")")
-        if(match != false && prediction > 0.5) {
-          alert(`ALERT ALERT: ${input} is ${prediction} likely to be ${label}`);
-        }
-      });
-    });
+function classifyToxicity(input, model) {
+  console.log('input ', input);
+  return model.classify(input).then(predictions => {
+    return predictions.map(p => {
+      const label = p.label,
+        match = p.results[0].match,
+        prediction = p.results[0].probabilities[1]
+      console.log(label + ': ' + match + '(' + prediction + ')');
+      return match != false && prediction > 0.5;
+    }).some(label => label);
   });
 }
 
@@ -611,15 +605,30 @@ function setActiveChannel(channel) {
   });
 
   $('#send-message').off('click');
-  $('#send-message').on('click', function() {
-    var body = $('#message-body-input').val();
-    channel.sendMessage(body).then(function() {
-      $('#message-body-input').val('').focus();
-      $('#channel-messages').scrollTop($('#channel-messages ul').height());
-      $('#channel-messages li.last-read').removeClass('last-read');
-      classifyToxicity(body);
+  const threshold = 0.9;
+  toxicity.load(threshold).then(model => {
+    $('#send-message').on('click', function () {
+      $('#toxicity-indicator span').text('');
+      var body = $('#message-body-input').val();
+      console.log("body ", body);
+      console.log("model ", model);
+      classifyToxicity(body, model).then(result => {
+        if (result) {
+          $('#toxicity-indicator span').text('This message was deemed to be toxic, please be more kind when chatting in this channel.');
+          $('#message-body-input').focus();
+        } else {
+          channel.sendMessage(body).then(function () {
+            $('#message-body-input')
+              .val('')
+              .focus();
+            $('#channel-messages').scrollTop($('#channel-messages ul').height());
+            $('#channel-messages li.last-read').removeClass('last-read');
+          });
+        }
+      });
     });
   });
+
 
   activeChannel.on('updated', updateActiveChannel);
 

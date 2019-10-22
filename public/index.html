@@ -85,6 +85,13 @@
       <div id="channel-chat">
         <div id="channel-messages"><ul></ul></div>
         <div id="channel-message-send">
+          <div id="toxicity-indicator"><span></span></div>
+          
+          <style>
+          #channel-messages { margin-bottom: 100px; position: relative; width: 100%; height: calc(100%
+          - 100px); overflow-y: auto; }  #toxicity-indicator { padding: 5px 15px; font-weight: bold; color: #E30000; } #toxicity-indicator
+          span { display: block; min-height: 18px; }
+          </style>
           <div id="typing-indicator"><span></span></div>
           <input type="textbox" id="message-body-input"></input>
           <button id="send-message" class="red-button">Send</div>
