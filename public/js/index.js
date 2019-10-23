@@ -373,9 +373,9 @@ function classifyToxicity(input, model) {
   console.log('input ', input);
   return model.classify(input).then(predictions => {
     return predictions.map(p => {
-      const label = p.label,
-        match = p.results[0].match,
-        prediction = p.results[0].probabilities[1]
+      const label = p.label;
+      const match = p.results[0].match;
+      const prediction = p.results[0].probabilities[1];
       console.log(label + ': ' + match + '(' + prediction + ')');
       return match != false && prediction > 0.5;
     }).some(label => label);
@@ -610,8 +610,6 @@ function setActiveChannel(channel) {
     $('#send-message').on('click', function () {
       $('#toxicity-indicator span').text('');
       var body = $('#message-body-input').val();
-      console.log("body ", body);
-      console.log("model ", model);
       classifyToxicity(body, model).then(result => {
         if (result) {
           $('#toxicity-indicator span').text('This message was deemed to be toxic, please be more kind when chatting in this channel.');
